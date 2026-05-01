@@ -26,7 +26,16 @@ frontend/.env.local
 .idea/
 *.swp
 
-# GCP
-*.json
+# GCP — chaves de serviço nunca no repositório
+infra/gcp-sa-key.json
+infra/*.json
+infra/terraform.tfvars
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+
+# JSON genérico (exceto configs do projeto)
 !package.json
+!package-lock.json
 !tsconfig.json
+!tsconfig.*.json
