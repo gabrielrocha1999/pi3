@@ -5,6 +5,8 @@ import type { Venda, VendaCreate, Produto } from "../types";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Modal from "../components/ui/Modal";
+import CepSearch from "../components/ui/CepSearch";
+import type { CepResult } from "../api/external";
 import { Plus } from "lucide-react";
 
 const fmt = (n: number) =>
@@ -21,7 +23,12 @@ export default function VendasPage() {
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<VendaCreate>({ produto_id: 0, quantidade: 1, cliente: "", observacao: "" });
+  const [endereco, setEndereco] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const handleCepResult = (result: CepResult) => {
+    setEndereco(`${result.logradouro}, ${result.bairro} — ${result.localidade}/${result.uf}`);
+  };
 
   const load = () =>
     Promise.all([getVendas(), getProdutos()])
@@ -140,6 +147,15 @@ export default function VendasPage() {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            <CepSearch onResult={handleCepResult} />
+
+            {endereco && (
+              <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-800">
+                📍 {endereco}
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
               <textarea

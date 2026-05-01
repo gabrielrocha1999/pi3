@@ -4,6 +4,7 @@ import {
   ShoppingCart,
   TrendingDown,
   Package,
+  Building2,
 } from "lucide-react";
 
 const links = [
@@ -11,17 +12,18 @@ const links = [
   { to: "/vendas", label: "Vendas", icon: ShoppingCart },
   { to: "/despesas", label: "Despesas", icon: TrendingDown },
   { to: "/estoque", label: "Estoque", icon: Package },
+  { to: "/empresa", label: "Empresa", icon: Building2 },
 ];
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
+    <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col" aria-label="Menu principal">
       <div className="px-6 py-6 border-b border-gray-700">
         <h1 className="text-xl font-bold tracking-tight">Pi3 Gestão</h1>
         <p className="text-xs text-gray-400 mt-0.5">Controle financeiro</p>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Navegação">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -35,7 +37,7 @@ export default function Sidebar() {
               }`
             }
           >
-            <Icon size={18} />
+            <Icon size={18} aria-hidden="true" />
             {label}
           </NavLink>
         ))}

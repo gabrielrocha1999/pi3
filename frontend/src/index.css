@@ -13,12 +13,36 @@ body {
   text-align: left;
 }
 
-.filter-protanopia {
-  filter: url(#protanopia);
+/* Colorblind SVG filters */
+.filter-protanopia  { filter: url(#protanopia); }
+.filter-deuteranopia { filter: url(#deuteranopia); }
+.filter-tritanopia  { filter: url(#tritanopia); }
+
+/* Alto contraste */
+.high-contrast {
+  filter: contrast(1.6) saturate(1.3);
 }
-.filter-deuteranopia {
-  filter: url(#deuteranopia);
+.high-contrast .bg-white { background-color: #fff !important; }
+.high-contrast .text-gray-500 { color: #111 !important; }
+.high-contrast .border-gray-100,
+.high-contrast .border-gray-200 { border-color: #000 !important; }
+.high-contrast a,
+.high-contrast button { outline-offset: 2px; }
+
+/* Skip navigation (acessibilidade teclado) */
+.skip-nav {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-size: 14px;
+  border-radius: 0 0 4px 0;
+  z-index: 100;
+  transition: top 0.1s;
 }
-.filter-tritanopia {
-  filter: url(#tritanopia);
+.skip-nav:focus {
+  top: 0;
 }

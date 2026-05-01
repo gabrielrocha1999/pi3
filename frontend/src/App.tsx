@@ -5,6 +5,7 @@ import DashboardPage from "./pages/Dashboard";
 import VendasPage from "./pages/Vendas";
 import DespesasPage from "./pages/Despesas";
 import EstoquePage from "./pages/Estoque";
+import EmpresaPage from "./pages/Empresa";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/vendas" element={<VendasPage />} />
             <Route path="/despesas" element={<DespesasPage />} />
             <Route path="/estoque" element={<EstoquePage />} />
+            <Route path="/empresa" element={<EmpresaPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

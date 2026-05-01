@@ -8,6 +8,7 @@ const pageTitles: Record<string, string> = {
   "/vendas": "Vendas",
   "/despesas": "Despesas",
   "/estoque": "Estoque",
+  "/empresa": "Consulta Empresa",
 };
 
 export default function Layout() {
@@ -17,7 +18,12 @@ export default function Layout() {
 
   return (
     <>
-      {/* SVG filters for colorblind accessibility */}
+      {/* Acessibilidade: pula para o conteúdo principal */}
+      <a href="#main-content" className="skip-nav">
+        Pular para o conteúdo
+      </a>
+
+      {/* Filtros SVG para daltonismo */}
       <svg aria-hidden="true" className="absolute w-0 h-0">
         <defs>
           <filter id="protanopia">
@@ -40,7 +46,7 @@ export default function Layout() {
         <Sidebar />
         <div className="flex-1 flex flex-col">
           <Header title={title} />
-          <main className="flex-1 p-6 bg-gray-50">
+          <main id="main-content" className="flex-1 p-6 bg-gray-50" tabIndex={-1}>
             <Outlet />
           </main>
         </div>
