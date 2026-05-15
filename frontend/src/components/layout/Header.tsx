@@ -2,7 +2,7 @@ import { Eye, Contrast } from "lucide-react";
 import { useAccessibility, type ColorFilter } from "../../context/AccessibilityContext";
 
 const filters: { value: ColorFilter; label: string }[] = [
-  { value: "none", label: "Normal" },
+  { value: "none", label: "Padrão" },
   { value: "protanopia", label: "Protanopia" },
   { value: "deuteranopia", label: "Deuteranopia" },
   { value: "tritanopia", label: "Tritanopia" },
