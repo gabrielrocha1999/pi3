@@ -8,33 +8,102 @@ Aplicação web para gestão financeira e controle de estoque voltada a microemp
 |------------|-----------------------------------------|
 | Backend    | FastAPI (Python 3.12) + SQLAlchemy      |
 | Frontend   | React 19 + TypeScript + Tailwind CSS    |
-| Banco      | PostgreSQL (Cloud SQL no GCP)           |
-| Deploy     | Cloud Run (GCP)                         |
+| Banco      | PostgreSQL                              |
 | CI/CD      | GitHub Actions                          |
-| Infra      | Terraform                               |
 
 ---
 
-## Desenvolvimento local
+## Como executar
 
-### Pré-requisitos
-- Docker + Docker Compose
-- Python 3.12
-- Node.js 20+
+### Opção 1 — Rodar localmente (sua máquina)
 
-### Subir tudo com Docker Compose
+**Pré-requisitos:**
+- Docker e Docker Compose instalados
+
+**Passo 1:** Crie o arquivo de variáveis de ambiente do frontend:
 
 ```bash
-docker-compose up --build
+# Crie o arquivo frontend/.env com o seguinte conteúdo:
+VITE_API_URL=http://localhost:8080
 ```
 
-| Serviço  | URL                    |
-|----------|------------------------|
-| Frontend | http://localhost:3000  |
-| Backend  | http://localhost:8080  |
+**Passo 2:** Suba os containers:
+
+```bash
+docker compose up -d --build
+```
+
+**Passo 3:** Acesse no navegador:
+
+| Serviço  | URL                        |
+|----------|----------------------------|
+| Frontend | http://localhost:3000      |
+| Backend  | http://localhost:8080      |
 | API Docs | http://localhost:8080/docs |
 
-### Backend sem Docker
+> **Atenção:** `VITE_API_URL` é injetado no momento do build. Sempre que alterar o `.env`, rode novamente com `--build`.
+
+---
+
+### Opção 2 — Rodar em uma VM (Oracle Cloud / Ubuntu)
+
+**Pré-requisitos:**
+- Docker e Docker Compose instalados na VM
+- Porta **3000** liberada no firewall da Oracle Cloud (Security List → Ingress Rules → TCP 3000)
+
+**Passo 1:** Clone o repositório na VM:
+
+```bash
+git clone https://github.com/<seu-usuario>/pi3.git
+cd pi3
+```
+
+**Passo 2:** Suba os containers (sem criar `.env` — o proxy nginx já cuida da comunicação):
+
+```bash
+docker compose up -d --build
+```
+
+**Passo 3:** Acesse no navegador:
+
+| Serviço  | URL                              |
+|----------|----------------------------------|
+| Frontend | http://<IP_DA_VM>:3000           |
+| API Docs | http://<IP_DA_VM>:8080/docs      |
+
+**Como funciona a comunicação na VM:**
+
+O frontend faz chamadas para `/api/*` que o nginx redireciona internamente para o backend via rede Docker. A porta 8080 não precisa ficar exposta publicamente.
+
+```
+Browser → http://<IP_DA_VM>:3000/api/produtos/
+              ↓ nginx (container frontend)
+          http://backend:8080/produtos/
+              ↓ rede interna Docker
+          FastAPI responde
+```
+
+**Atualizar após novo push no repositório:**
+
+```bash
+git pull
+docker compose down
+docker compose up -d --build
+```
+
+**Solução para erro "port is already allocated":**
+
+```bash
+docker stop $(docker ps -q)
+docker container prune -f
+docker compose up -d
+```
+
+---
+
+## Rodar sem Docker (desenvolvimento)
+
+### Backend
 
 ```bash
 cd backend
@@ -45,12 +114,12 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-### Frontend sem Docker
+### Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env   # configure VITE_API_URL
+cp .env.example .env   # configure VITE_API_URL=http://localhost:8080
 npm run dev
 ```
 
@@ -62,105 +131,6 @@ npm run dev
 cd backend
 pytest tests/ -v
 ```
-
----
-
-## Deploy em VM (Oracle Cloud / Ubuntu)
-
-### Pré-requisitos na VM
-- Docker + Docker Compose instalados
-- Portas **3000** (frontend) e **8080** (backend) liberadas no firewall da Oracle Cloud (Security List → Ingress Rules)
-
-### 1. Clonar o repositório
-
-```bash
-git clone https://github.com/<seu-usuario>/pi3.git
-cd pi3
-```
-
-### 2. Subir os containers
-
-```bash
-docker compose up -d --build
-```
-
-| Serviço  | URL                              |
-|----------|----------------------------------|
-| Frontend | http://<IP_DA_VM>:3000           |
-| Backend  | http://<IP_DA_VM>:8080           |
-| API Docs | http://<IP_DA_VM>:8080/docs      |
-
-### Como funciona a comunicação frontend → backend
-
-O frontend faz chamadas para `/api/*` que o nginx (container frontend) redireciona internamente para o backend via rede Docker. A porta 8080 não precisa ficar exposta publicamente.
-
-```
-Browser → http://<IP>:3000/api/produtos/
-              ↓ nginx (container frontend)
-          http://backend:8080/produtos/
-              ↓ rede interna Docker
-          FastAPI responde
-```
-
-### Solução de problemas comuns
-
-**Porta já em uso (`port is already allocated`):**
-```bash
-docker stop $(docker ps -q)
-docker container prune -f
-docker compose up -d
-```
-
-**Atualizar após push no repositório:**
-```bash
-git pull
-docker compose down
-docker compose up -d --build
-```
-
----
-
-## Deploy no GCP
-
-### 1. Configuração inicial (uma única vez)
-
-```bash
-bash infra/setup-gcp.sh SEU_PROJECT_ID
-```
-
-Isso cria a Service Account e habilita as APIs necessárias.
-
-### 2. Adicionar Secrets no GitHub
-
-Vá em **Settings → Secrets and variables → Actions** e adicione:
-
-| Secret                    | Valor                                      |
-|---------------------------|--------------------------------------------|
-| `GCP_PROJECT_ID`          | ID do seu projeto GCP                      |
-| `GCP_SA_KEY`              | Conteúdo JSON da Service Account           |
-| `CLOUD_SQL_CONNECTION_NAME` | Preenchido após o `terraform apply`      |
-
-### 3. Provisionar infraestrutura com Terraform
-
-```bash
-cd infra
-cp terraform.tfvars.example terraform.tfvars
-# edite terraform.tfvars com seus valores
-
-terraform init
-terraform plan
-terraform apply
-```
-
-Após o apply, copie o `cloud_sql_connection_name` do output e adicione ao GitHub Secret.
-
-### 4. Deploy automático
-
-Todo push na branch `main` dispara o pipeline que:
-1. Roda os testes do backend
-2. Faz build do frontend (TypeScript + Vite)
-3. Publica imagens no Artifact Registry
-4. Faz deploy no Cloud Run (backend e frontend)
 
 ---
 
@@ -185,7 +155,6 @@ Pi3/
 │       ├── pages/           # Dashboard, Vendas, Despesas, Estoque
 │       ├── context/         # Acessibilidade (daltonismo)
 │       └── types/
-├── infra/                   # Terraform (Cloud SQL + Cloud Run)
 └── .github/workflows/       # GitHub Actions CI/CD
 ```
 
