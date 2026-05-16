@@ -65,6 +65,61 @@ pytest tests/ -v
 
 ---
 
+## Deploy em VM (Oracle Cloud / Ubuntu)
+
+### Pré-requisitos na VM
+- Docker + Docker Compose instalados
+- Portas **3000** (frontend) e **8080** (backend) liberadas no firewall da Oracle Cloud (Security List → Ingress Rules)
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/<seu-usuario>/pi3.git
+cd pi3
+```
+
+### 2. Subir os containers
+
+```bash
+docker compose up -d --build
+```
+
+| Serviço  | URL                              |
+|----------|----------------------------------|
+| Frontend | http://<IP_DA_VM>:3000           |
+| Backend  | http://<IP_DA_VM>:8080           |
+| API Docs | http://<IP_DA_VM>:8080/docs      |
+
+### Como funciona a comunicação frontend → backend
+
+O frontend faz chamadas para `/api/*` que o nginx (container frontend) redireciona internamente para o backend via rede Docker. A porta 8080 não precisa ficar exposta publicamente.
+
+```
+Browser → http://<IP>:3000/api/produtos/
+              ↓ nginx (container frontend)
+          http://backend:8080/produtos/
+              ↓ rede interna Docker
+          FastAPI responde
+```
+
+### Solução de problemas comuns
+
+**Porta já em uso (`port is already allocated`):**
+```bash
+docker stop $(docker ps -q)
+docker container prune -f
+docker compose up -d
+```
+
+**Atualizar após push no repositório:**
+```bash
+git pull
+docker compose down
+docker compose up -d --build
+```
+
+---
+
 ## Deploy no GCP
 
 ### 1. Configuração inicial (uma única vez)
