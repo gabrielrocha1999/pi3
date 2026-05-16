@@ -6,7 +6,7 @@ RUN npm ci
 COPY . .
 
 # Permite injetar a URL do backend via --build-arg no deploy
-ARG VITE_API_URL=http://localhost:8080
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
